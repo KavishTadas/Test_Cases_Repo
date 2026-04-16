@@ -4,8 +4,11 @@ import com.kavish.core.config.ConfigFactory;
 import com.kavish.core.constants.BrowserType;
 import com.kavish.core.logging.Log;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
@@ -19,9 +22,10 @@ public final class DriverFactory {
     private DriverFactory() {}
 
     public static WebDriver initDriver() {
-        BrowserType browser = BrowserType.valueOf(
-                ConfigFactory.getConfig().browser().trim().toUpperCase());
+        BrowserType browser = resolveBrowser();
         boolean headless = ConfigFactory.getConfig().headless();
+        String gridUrl = ConfigFactory.getConfig().gridUrl();
+        boolean remote = shouldUseRemoteDriver(gridUrl);
         String thread = Thread.currentThread().getName();
 
         Log.info("DriverFactory [" + thread + "] — initialising " + browser
@@ -30,8 +34,6 @@ public final class DriverFactory {
         WebDriver driver;
 
         try {
-            URL gridUrl = new URL(ConfigFactory.getConfig().gridUrl());
-
             switch (browser) {
 
                 // ── CHROME ────────────────────────────────────────────────────
@@ -47,20 +49,22 @@ public final class DriverFactory {
                     LoggingPreferences logPrefs = new LoggingPreferences();
                     logPrefs.enable(LogType.BROWSER, Level.ALL);
                     chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
-                    driver = new RemoteWebDriver(gridUrl, chromeOptions);
+                    driver = remote
+                            ? new RemoteWebDriver(new URL(gridUrl), chromeOptions)
+                            : new ChromeDriver(chromeOptions);
                     break;
 
                 // ── FIREFOX ───────────────────────────────────────────────────
                 case FIREFOX:
                     FirefoxOptions firefoxOptions = new FirefoxOptions();
-                    firefoxOptions.addArguments("--no-sandbox");
-                    firefoxOptions.addArguments("--disable-dev-shm-usage");
                     firefoxOptions.addArguments("--width=1920");
                     firefoxOptions.addArguments("--height=1080");
                     if (headless) {
                         firefoxOptions.addArguments("--headless");
                     }
-                    driver = new RemoteWebDriver(gridUrl, firefoxOptions);
+                    driver = remote
+                            ? new RemoteWebDriver(new URL(gridUrl), firefoxOptions)
+                            : new FirefoxDriver(firefoxOptions);
                     break;
 
                 // ── EDGE ──────────────────────────────────────────────────────
@@ -73,7 +77,9 @@ public final class DriverFactory {
                     if (headless) {
                         edgeOptions.addArguments("--headless=new");
                     }
-                    driver = new RemoteWebDriver(gridUrl, edgeOptions);
+                    driver = remote
+                            ? new RemoteWebDriver(new URL(gridUrl), edgeOptions)
+                            : new EdgeDriver(edgeOptions);
                     break;
 
                 default:
@@ -95,5 +101,43 @@ public final class DriverFactory {
         Log.info("DriverFactory [" + thread + "] — session ready | sessionId="
                 + ((RemoteWebDriver) driver).getSessionId());
         return driver;
+    }
+
+    private static BrowserType resolveBrowser() {
+        String browser = ConfigFactory.getConfig().browser();
+        if (browser == null || browser.isBlank()) {
+            return BrowserType.CHROME;
+        }
+        return BrowserType.valueOf(browser.trim().toUpperCase());
+    }
+
+    private static boolean shouldUseRemoteDriver(String gridUrl) {
+        String explicitGridUrl = firstNonBlank(
+                System.getProperty("grid.url"),
+                System.getenv("GRID_URL"));
+
+        if (explicitGridUrl != null) {
+            return !isLocalModeValue(explicitGridUrl);
+        }
+
+        if (gridUrl == null || gridUrl.isBlank()) {
+            return false;
+        }
+
+        String normalized = gridUrl.trim().toLowerCase();
+        return !normalized.equals("local")
+                && !normalized.equals("http://localhost:4444")
+                && !normalized.equals("http://127.0.0.1:4444");
+    }
+
+    private static boolean isLocalModeValue(String value) {
+        String normalized = value.trim().toLowerCase();
+        return normalized.equals("local") || normalized.equals("false");
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        if (first != null && !first.isBlank()) return first.trim();
+        if (second != null && !second.isBlank()) return second.trim();
+        return null;
     }
 }

@@ -12,15 +12,34 @@ public final class DriverManager {
         return DRIVER.get();
     }
 
+    public static WebDriver getRequiredDriver() {
+        WebDriver driver = DRIVER.get();
+        if (driver == null) {
+            throw new IllegalStateException(
+                    "WebDriver is not initialised for the current thread. Call DriverFactory.initDriver() first.");
+        }
+        return driver;
+    }
+
     /** Stores a WebDriver on the current thread's slot. */
     public static void setDriver(WebDriver driver) {
+        if (driver == null) {
+            throw new IllegalArgumentException("DriverManager cannot store a null WebDriver.");
+        }
         DRIVER.set(driver);
+    }
+
+    public static void quitDriver() {
+        unload();
     }
 
     public static void unload() {
         WebDriver driver = DRIVER.get();
-        if (driver != null) {
-            driver.quit();
+        try {
+            if (driver != null) {
+                driver.quit();
+            }
+        } finally {
             DRIVER.remove();
         }
     }
