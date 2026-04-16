@@ -69,7 +69,7 @@ public class TestListener implements ITestListener {
                     method.getAnnotation(FrameworkAnnotation.class);
 
             if (annotation == null) {
-                Log.warn("@FrameworkAnnotation missing on: "
+                Log.info("@FrameworkAnnotation missing on: "
                         + result.getMethod().getMethodName()
                         + " --- add it for categorisation and Allure metadata.");
                 return;

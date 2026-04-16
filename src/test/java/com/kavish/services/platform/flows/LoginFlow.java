@@ -12,11 +12,11 @@ public class LoginFlow {
 
     /**
      * Credentials injected at construction time.
-     * Source: -Dapp.username / -Dapp.password (never hardcoded).
+     * Source: FrameworkConfig credential resolution (never hardcoded).
      */
     public LoginFlow() {
-        this.username = resolveCredential("app.username");
-        this.password = resolveCredential("app.password");
+        this.username = ConfigFactory.getConfig().appUsername();
+        this.password = ConfigFactory.getConfig().appPassword();
     }
 
     /** Overload for when a test needs to supply specific credentials explicitly. */
@@ -64,17 +64,5 @@ public class LoginFlow {
         home.driver().navigate().to(base + relativePath);
         Log.info("LoginFlow — navigated to: " + relativePath);
         return home;
-    }
-
-    // ── helper ────────────────────────────────────────────────────────────────
-
-    private static String resolveCredential(String sysPropKey) {
-        String value = System.getProperty(sysPropKey);
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException(
-                    "Missing credential: -D" + sysPropKey + " must be set. " +
-                            "Pass via Maven or Jenkins Credentials — never hardcode.");
-        }
-        return value.trim();
     }
 }

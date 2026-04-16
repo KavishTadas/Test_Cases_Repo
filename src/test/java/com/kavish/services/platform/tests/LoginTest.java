@@ -6,18 +6,15 @@ import com.kavish.core.annotations.TestCategory;
 import com.kavish.core.base.BaseTest;
 import com.kavish.core.dataproviders.ExcelDataProvider;
 import com.kavish.core.driver.DriverManager;
-import com.kavish.core.listeners.TestListener;
 import com.kavish.core.utils.DataProviderUtils;
 import com.kavish.services.platform.flows.LoginFlow;
 import com.kavish.services.platform.pages.HomePage;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Map;
 
-@Listeners(TestListener.class)
 public class LoginTest extends BaseTest {
 
     // ── Data Providers ────────────────────────────────────────────────────────

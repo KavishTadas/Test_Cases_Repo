@@ -80,4 +80,24 @@ public class FrameworkConfig {
         }
         return v;
     }
+
+    public String appUsername() {
+        return requiredSecret("app.username", "APP_USERNAME");
+    }
+
+    public String appPassword() {
+        return requiredSecret("app.password", "APP_PASSWORD");
+    }
+
+    private String requiredSecret(String sysPropKey, String envVarKey) {
+        String value = getNonBlankSysProp(sysPropKey);
+        if (value != null) return value;
+
+        value = getNonBlankEnvVar(envVarKey);
+        if (value != null) return value;
+
+        throw new IllegalStateException(
+                "Missing credential. Provide either -D" + sysPropKey
+                        + " or OS environment variable " + envVarKey + ".");
+    }
 }
