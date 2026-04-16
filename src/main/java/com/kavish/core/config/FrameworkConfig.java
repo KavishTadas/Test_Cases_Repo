@@ -13,7 +13,7 @@ public class FrameworkConfig {
     public FrameworkConfig() {
         String env = getNonBlankSysProp("env");
         if (env == null) env = getNonBlankEnvVar("ENV");
-        if (env == null) env = "qa";
+        if (env == null) env = "local";
         this.activeEnv = env;
 
         String svc = getNonBlankSysProp("service");

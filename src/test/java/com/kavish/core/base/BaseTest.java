@@ -1,5 +1,6 @@
 package com.kavish.core.base;
 
+import com.kavish.core.annotations.FrameworkAnnotation;
 import com.kavish.core.config.ConfigFactory;
 import com.kavish.core.config.FrameworkConfig;
 import com.kavish.core.driver.DriverFactory;
@@ -9,17 +10,20 @@ import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+import java.lang.reflect.Method;
+
 public class BaseTest {
 
     @BeforeMethod(alwaysRun = true)
-    public void setUp() {
+    public void setUp(Method method) {
         FrameworkConfig cfg = ConfigFactory.getConfig();
-        String resolvedUrl = cfg.baseUrl();
+        String resolvedService = resolveServiceForMethod(method, cfg);
+        String resolvedUrl = cfg.serviceBaseUrl(resolvedService);
         String thread = Thread.currentThread().getName();
 
         Log.info("========== FRAMEWORK CONFIG [" + thread + "] ==========");
         Log.info("  env         : " + cfg.env());
-        Log.info("  service     : " + cfg.service());
+        Log.info("  service     : " + resolvedService);
         Log.info("  baseUrl     : " + resolvedUrl);
         Log.info("  gridUrl     : " + cfg.gridUrl());
         Log.info("  browser     : " + cfg.browser());
@@ -31,6 +35,25 @@ public class BaseTest {
         // Each parallel thread gets its own isolated WebDriver session.
         DriverFactory.initDriver();
         DriverManager.getDriver().get(resolvedUrl);
+    }
+
+    private String resolveServiceForMethod(Method method, FrameworkConfig cfg) {
+        String service = System.getProperty("service");
+        if (service != null && !service.isBlank()) {
+            return service.trim();
+        }
+
+        service = System.getenv("SERVICE");
+        if (service != null && !service.isBlank()) {
+            return service.trim();
+        }
+
+        FrameworkAnnotation annotation = method.getAnnotation(FrameworkAnnotation.class);
+        if (annotation != null && !annotation.service().isBlank()) {
+            return annotation.service().trim();
+        }
+
+        return cfg.service();
     }
 
     @AfterMethod(alwaysRun = true)
