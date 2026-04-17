@@ -3,6 +3,7 @@ package com.kavish.core.listeners;
 import com.kavish.core.annotations.FrameworkAnnotation;
 import com.kavish.core.config.ConfigFactory;
 import com.kavish.core.logging.Log;
+import com.kavish.core.utils.AllureEnvironmentWriter;
 import com.kavish.core.utils.AllureAttachmentUtils;
 import io.qameta.allure.Allure;
 import io.qameta.allure.SeverityLevel;
@@ -49,6 +50,7 @@ public class TestListener implements ITestListener {
     @Override
     public void onStart(ITestContext context) {
         Log.info("===== TEST SUITE STARTED  : " + context.getName() + " =====");
+        AllureEnvironmentWriter.write();
     }
 
     @Override

@@ -18,6 +18,14 @@ On Windows:
 .\mvnw.cmd -Dtest=ConfigSanityTest test
 ```
 
+## Windows Quick Smoke Run
+
+Run a credential-free local verification before any browser-backed tests:
+
+```powershell
+.\scripts\run-smoke.ps1
+```
+
 `./mvnw test` runs the wider suite, including credentialed UI coverage, and should be used only after `APP_USERNAME` and `APP_PASSWORD` are configured.
 
 ## Local Browser Run
@@ -90,6 +98,16 @@ Open the report with the local Allure server:
 
 ```sh
 ./mvnw allure:serve
+```
+
+## Windows Allure CLI Setup
+
+If `allure --version` returns CommandNotFound, install the CLI separately. The Maven plugin and the TestNG adapter do not guarantee a globally available `allure` shell command.
+
+Scoop:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+irm get.scoop.sh
 ```
 
 On Windows, use `.\mvnw.cmd` for the same goals.
