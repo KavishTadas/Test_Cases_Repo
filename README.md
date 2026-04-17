@@ -6,17 +6,19 @@
 
 ## First Run
 
-Use the Maven wrapper so everyone runs with the same Maven setup:
+Run the browser-free configuration sanity test first:
 
 ```sh
-./mvnw test
+./mvnw -Dtest=ConfigSanityTest test
 ```
 
 On Windows:
 
 ```powershell
-.\mvnw.cmd test
+.\mvnw.cmd -Dtest=ConfigSanityTest test
 ```
+
+`./mvnw test` runs the wider suite, including credentialed UI coverage, and should be used only after `APP_USERNAME` and `APP_PASSWORD` are configured.
 
 ## Local Browser Run
 

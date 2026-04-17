@@ -6,7 +6,10 @@ import com.kavish.core.logging.Log;
 import io.qameta.allure.Allure;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 public final class AllureAttachmentUtils {
@@ -15,6 +18,24 @@ public final class AllureAttachmentUtils {
 
     public static void attachScreenshot(String testName) {
         try {
+            String screenshotPath = ScreenshotUtils.capture(testName);
+            if (screenshotPath != null && screenshotPath.endsWith(".png")) {
+                try (InputStream inputStream = Files.newInputStream(Path.of(screenshotPath))) {
+                    Allure.addAttachment(
+                            "Screenshot --- " + testName,
+                            "image/png",
+                            inputStream,
+                            ".png"
+                    );
+                    Allure.addAttachment("Screenshot Path", "text/plain", screenshotPath);
+                    Log.info("attachScreenshot: saved screenshot path: " + screenshotPath);
+                    return;
+                } catch (Exception e) {
+                    Log.warn("attachScreenshot: file attachment failed --- falling back to captureBytes(). Test: "
+                            + testName + " | " + e.getMessage());
+                }
+            }
+
             byte[] screenshot = ScreenshotUtils.captureBytes();
             if (screenshot == null || screenshot.length == 0) {
                 Log.warn("attachScreenshot: captureBytes() returned empty --- "
@@ -56,9 +77,17 @@ public final class AllureAttachmentUtils {
 
     public static void attachEnvInfo() {
         try {
+            attachEnvInfo(ConfigFactory.getConfig().service());
+        } catch (Exception e) {
+            Log.error("attachEnvInfo FAILED: " + e.getMessage());
+        }
+    }
+
+    public static void attachEnvInfo(String resolvedService) {
+        try {
             FrameworkConfig cfg = ConfigFactory.getConfig();
             String baseUrl;
-            try { baseUrl = cfg.baseUrl(); }
+            try { baseUrl = cfg.serviceBaseUrl(resolvedService); }
             catch (IllegalStateException ex) {
                 baseUrl = "unavailable --- " + ex.getMessage();
             }
@@ -66,7 +95,7 @@ public final class AllureAttachmentUtils {
             String content =
                     "thread      : " + Thread.currentThread().getName() + "\n" +
                             "env         : " + cfg.env()          + "\n" +
-                            "service     : " + cfg.service()      + "\n" +
+                            "service     : " + resolvedService    + "\n" +
                             "baseUrl     : " + baseUrl            + "\n" +
                             "gridUrl     : " + cfg.gridUrl()      + "\n" +
                             "browser     : " + cfg.browser()      + "\n" +

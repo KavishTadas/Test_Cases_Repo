@@ -1,13 +1,17 @@
 package com.kavish.sanity;
 
 import com.kavish.core.config.ConfigFactory;
+import com.kavish.core.annotations.FrameworkAnnotation;
+import com.kavish.core.annotations.Priority;
+import com.kavish.core.annotations.TestCategory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class ConfigSanityTest {
 
-    @Test
-    public void verifyConfigLoads() {
+    @FrameworkAnnotation(category = { TestCategory.SANITY }, author = "Kavish", service = "hcm", story = "Framework bootstrap", priority = Priority.P4)
+    @Test(description = "Hello World sanity test: framework config loads without browser or credential bootstrap")
+    public void verifyHelloWorldFrameworkBootstrap() {
         System.out.println("env="         + ConfigFactory.getConfig().env());
         System.out.println("service="     + ConfigFactory.getConfig().service());
         System.out.println("baseUrl="     + ConfigFactory.getConfig().baseUrl());

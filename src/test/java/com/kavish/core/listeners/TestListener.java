@@ -1,6 +1,7 @@
 package com.kavish.core.listeners;
 
 import com.kavish.core.annotations.FrameworkAnnotation;
+import com.kavish.core.config.ConfigFactory;
 import com.kavish.core.logging.Log;
 import com.kavish.core.utils.AllureAttachmentUtils;
 import io.qameta.allure.Allure;
@@ -30,11 +31,12 @@ public class TestListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
         String testName = result.getMethod().getMethodName();
+        String resolvedService = resolveService(result);
         Log.error(tag(result) + "FAILED  : " + testName);
         AllureAttachmentUtils.attachScreenshot(testName);
         AllureAttachmentUtils.attachFailureReason(result.getThrowable());
         AllureAttachmentUtils.attachCurrentUrl();
-        AllureAttachmentUtils.attachEnvInfo();
+        AllureAttachmentUtils.attachEnvInfo(resolvedService);
         AllureAttachmentUtils.attachPageSource();
         AllureAttachmentUtils.attachConsoleLogs();
     }
@@ -122,6 +124,31 @@ public class TestListener implements ITestListener {
         } catch (Exception e) {
             Log.error("applyAnnotationMetadata FAILED: " + e.getMessage());
         }
+    }
+
+    private String resolveService(ITestResult result) {
+        String service = System.getProperty("service");
+        if (service != null && !service.isBlank()) {
+            return service.trim();
+        }
+
+        service = System.getenv("SERVICE");
+        if (service != null && !service.isBlank()) {
+            return service.trim();
+        }
+
+        try {
+            Method method = result.getMethod().getConstructorOrMethod().getMethod();
+            FrameworkAnnotation annotation = method.getAnnotation(FrameworkAnnotation.class);
+            if (annotation != null && !annotation.service().isBlank()) {
+                return annotation.service().trim();
+            }
+        } catch (Exception e) {
+            Log.warn("resolveService: unable to read @FrameworkAnnotation service --- "
+                    + e.getMessage());
+        }
+
+        return ConfigFactory.getConfig().service();
     }
 
     private String mapPriorityToSeverity(String priority) {

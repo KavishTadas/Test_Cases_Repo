@@ -1,2 +1,3 @@
 com.kavish.core.listeners.TestListener
 com.kavish.core.listeners.GroupsListener
+com.kavish.core.listeners.SuiteListener
