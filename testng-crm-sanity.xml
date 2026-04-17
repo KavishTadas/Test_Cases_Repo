@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="CRM Sanity" verbose="1" thread-count="1">
+    <test name="CRM Sanity Tests">
+        <groups>
+            <run>
+                <include name="SANITY"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="com.kavish.tests.crm"/>
+        </packages>
+    </test>
+</suite>
