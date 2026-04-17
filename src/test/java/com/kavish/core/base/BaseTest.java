@@ -1,5 +1,6 @@
 package com.kavish.core.base;
 
+import org.testng.annotations.Listeners;
 import com.kavish.core.annotations.FrameworkAnnotation;
 import com.kavish.core.config.ConfigFactory;
 import com.kavish.core.config.FrameworkConfig;
@@ -12,6 +13,7 @@ import org.testng.annotations.BeforeMethod;
 
 import java.lang.reflect.Method;
 
+@Listeners({com.kavish.core.listeners.TestListener.class, com.kavish.core.listeners.GroupsListener.class})
 public class BaseTest {
 
     @BeforeMethod(alwaysRun = true)

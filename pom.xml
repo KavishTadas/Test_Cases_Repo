@@ -126,9 +126,6 @@
                     <systemPropertyVariables>
                         <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
                     </systemPropertyVariables>
-                    <excludes>
-                        <exclude>**/com/kavish/services/hcm/tests/**/*</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
 
